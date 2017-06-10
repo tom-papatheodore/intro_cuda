@@ -1,0 +1,13 @@
+#!/bin/bash
+#PBS -A STF007
+#PBS -N vec_add_err
+#PBS -j oe
+#PBS -l walltime=00:10:00,nodes=1
+
+cd $PBS_O_WORKDIR
+date
+
+#source /opt/modules/default/init/bash
+#module load cudatoolkit
+
+aprun -n1 -N1 ./run
