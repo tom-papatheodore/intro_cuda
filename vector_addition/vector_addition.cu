@@ -18,19 +18,19 @@ int main()
   int *B = (int*)malloc(bytes);
   int *C = (int*)malloc(bytes);
 
-	// Fill host arrays A and B
-	for(int i=0; i<N; i++)
-	{
-		A[i] = 1;
-		B[i] = 2;
-	}
-
 	// Allocate memory for arrays d_A, d_B, and d_C on device
 	int *d_A, *d_B, *d_C;
 
 	cudaMalloc(&d_A, bytes);	
 	cudaMalloc(&d_B, bytes);
 	cudaMalloc(&d_C, bytes);
+
+  // Fill host arrays A and B
+  for(int i=0; i<N; i++)
+  {
+    A[i] = 1;
+    B[i] = 2;
+  }
 
 	// Copy data from host arrays A and B to device arrays d_A and d_B
 	cudaMemcpy(d_A, A, bytes, cudaMemcpyHostToDevice);
