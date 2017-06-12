@@ -38,7 +38,7 @@ int main()
 
 	// Set execution configuration parameters and launch kernel
 	int threads_in_block = 128;
-	int blocks_in_grid = ceil(N/threads_in_block);
+	int blocks_in_grid = ceil(float(N)/threads_in_block);
 	add_vectors<<< blocks_in_grid, threads_in_block >>>(d_A, d_B, d_C, N);
 
 	// Copy data from device array d_C to host array C
