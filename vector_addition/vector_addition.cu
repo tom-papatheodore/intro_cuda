@@ -37,9 +37,12 @@ int main()
 	cudaMemcpy(d_B, B, bytes, cudaMemcpyHostToDevice);
 
 	// Set execution configuration parameters and launch kernel
-	int threads_in_block = 128;
-	int blocks_in_grid = ceil(float(N)/threads_in_block);
-	add_vectors<<< blocks_in_grid, threads_in_block >>>(d_A, d_B, d_C, N);
+	//		thr_per_blk: number of CUDA threads per grid block
+	//		blk_in_grid: number of blocks in grid
+	int thr_per_blk = 128;
+	int blk_in_grid = ceil( float(N) / thr_per_blk );
+
+  add_vectors<<< blk_in_grid, thr_per_blk >>>(d_A, d_B, d_C, N);
 
 	// Copy data from device array d_C to host array C
 	cudaMemcpy(C, d_C, bytes, cudaMemcpyDeviceToHost);
@@ -54,14 +57,17 @@ int main()
 		}
 	}	
 
-	printf("__SUCCESS__\n");
-
+	// Free CPU memory
 	free(A);
 	free(B);
 	free(C);
+
+	// Free GPU memory
 	cudaFree(d_A);
 	cudaFree(d_B);
 	cudaFree(d_C);
+
+  printf("__SUCCESS__\n");
 
 	return 0;
 }
