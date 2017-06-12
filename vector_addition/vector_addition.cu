@@ -67,7 +67,7 @@ int main()
 	cudaFree(d_B);
 	cudaFree(d_C);
 
-  printf("__SUCCESS__\n");
+	printf("__SUCCESS__\n");
 
 	return 0;
 }
