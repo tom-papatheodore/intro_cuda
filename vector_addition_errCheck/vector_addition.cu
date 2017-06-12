@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+// Macro for checking errors in CUDA API calls
 #define cudaErrorCheck(call)                                                              \
 do{                                                                                       \
     cudaError_t cuErr = call;                                                             \
@@ -9,14 +10,17 @@ do{                                                                             
     }                                                                                     \
 }while(0)
 
+// Size of array
 #define N 10240
 
+// Kernel
 __global__ void add_vectors(int *a, int *b, int *c, int n)
 {
 	int id = blockDim.x * blockIdx.x + threadIdx.x;
 	if(id < n) c[id] = a[id] + b[id];
 }
 
+// Main program
 int main()
 {
 	// Number of bytes to allocate for N integers
@@ -29,7 +33,6 @@ int main()
 
 	// Allocate memory for arrays d_A, d_B, and d_C on device
 	int *d_A, *d_B, *d_C;
-
 	cudaErrorCheck( cudaMalloc(&d_A, bytes) );	
 	cudaErrorCheck( cudaMalloc(&d_B, bytes) );
 	cudaErrorCheck( cudaMalloc(&d_C, bytes) );
@@ -45,21 +48,22 @@ int main()
 	cudaErrorCheck( cudaMemcpy(d_A, A, bytes, cudaMemcpyHostToDevice) );
 	cudaErrorCheck( cudaMemcpy(d_B, B, bytes, cudaMemcpyHostToDevice) );
 
-	// Set execution configuration parameters and launch kernel
+	// Set execution configuration parameters
 	//		thr_per_blk: number of CUDA threads per grid block
 	//		blk_in_grid: number of blocks in grid
 	int thr_per_blk = 128;
 	int blk_in_grid = ceil( float(N) / thr_per_blk );
 
+	// Launch kernel
 	add_vectors<<< blk_in_grid, thr_per_blk >>>(d_A, d_B, d_C, N);
 
+  // Check for errors in kernel launch (e.g. invalid execution configuration paramters)
 	cudaError_t cuErrSync  = cudaGetLastError();
+
+  // Check for errors on the GPU after control is returned to CPU
 	cudaError_t cuErrAsync = cudaDeviceSynchronize();
 
-	// This is needed to find errors in kernel launch (e.g. invalid execution configuration parameters)
 	if (cuErrSync != cudaSuccess) { printf("CUDA Error - %s:%d: '%s'\n", __FILE__, __LINE__, cudaGetErrorString(cuErrSync)); exit(0); }
-
-	// This is needed to find errors on the GPU after control is returned to CPU
 	if (cuErrAsync != cudaSuccess) { printf("CUDA Error - %s:%d: '%s'\n", __FILE__, __LINE__, cudaGetErrorString(cuErrAsync)); exit(0); }
 
 	// Copy data from device array d_C to host array C
