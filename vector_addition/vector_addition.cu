@@ -13,10 +13,10 @@ int main()
 	// Number of bytes to allocate for N integers
 	size_t bytes = N*sizeof(int);
 
-  // Allocate memory for arrays A, B, and C on host
-  int *A = (int*)malloc(bytes);
-  int *B = (int*)malloc(bytes);
-  int *C = (int*)malloc(bytes);
+	// Allocate memory for arrays A, B, and C on host
+	int *A = (int*)malloc(bytes);
+	int *B = (int*)malloc(bytes);
+	int *C = (int*)malloc(bytes);
 
 	// Allocate memory for arrays d_A, d_B, and d_C on device
 	int *d_A, *d_B, *d_C;
@@ -25,12 +25,12 @@ int main()
 	cudaMalloc(&d_B, bytes);
 	cudaMalloc(&d_C, bytes);
 
-  // Fill host arrays A and B
-  for(int i=0; i<N; i++)
-  {
-    A[i] = 1;
-    B[i] = 2;
-  }
+	// Fill host arrays A and B
+	for(int i=0; i<N; i++)
+	{
+		A[i] = 1;
+		B[i] = 2;
+	}
 
 	// Copy data from host arrays A and B to device arrays d_A and d_B
 	cudaMemcpy(d_A, A, bytes, cudaMemcpyHostToDevice);
@@ -42,7 +42,7 @@ int main()
 	int thr_per_blk = 128;
 	int blk_in_grid = ceil( float(N) / thr_per_blk );
 
-  add_vectors<<< blk_in_grid, thr_per_blk >>>(d_A, d_B, d_C, N);
+	add_vectors<<< blk_in_grid, thr_per_blk >>>(d_A, d_B, d_C, N);
 
 	// Copy data from device array d_C to host array C
 	cudaMemcpy(C, d_C, bytes, cudaMemcpyDeviceToHost);
