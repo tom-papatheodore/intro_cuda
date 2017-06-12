@@ -1,8 +1,20 @@
 #include <stdio.h>
 
+// Macro for checking error CUDA API calls
+#define cudaErrorCheck(call)                                                              \
+do{                                                                                       \
+    cudaError_t cuErr = call;                                                             \
+    if(cudaSuccess != cuErr){                                                             \
+      printf("CUDA Error - %s:%d: '%s'\n", __FILE__, __LINE__, cudaGetErrorString(cuErr));\
+      exit(0);                                                                            \
+    }                                                                                     \
+}while(0)
+
+// Values for MxN matrix
 #define M 100
 #define N	200
 
+// Kernel
 __global__ void add_matrices(int *a, int *b, int *c, int m, int n)
 {
 	int column = blockDim.x * blockIdx.x + threadIdx.x;
@@ -13,16 +25,27 @@ __global__ void add_matrices(int *a, int *b, int *c, int m, int n)
 		int thread_id = row * n + column;
 		c[thread_id] = a[thread_id] + b[thread_id];
 	}
-
 }
 
+// Main program
 int main()
 {
+	// Number of bytes to allocate for MxN matrix
+	size_t bytes = M*N*sizeof(int);
 
+	// Allocate memory for arrays A, B, and C on host
 	int A[M][N];
 	int B[M][N];
 	int C[M][N];
 
+	// Allocate memory for arrays d_A, d_B, and d_C on device
+	int *d_A, *d_B, *d_C;
+
+	cudaErrorCheck( cudaMalloc(&d_A, bytes) );
+	cudaErrorCheck( cudaMalloc(&d_B, bytes) );
+	cudaErrorCheck( cudaMalloc(&d_C, bytes) );
+
+	// Initialize host arrays d_A, d_B, and d_C
 	for(int i=0; i<M; i++)
 	{
 		for(int j=0; j<N; j++)
@@ -33,51 +56,55 @@ int main()
 		}
 	}
 
-	int *d_A, *d_B, *d_C;
+	// Copy data from host arrays A and B to device arrays d_A and d_B
+	cudaErrorCheck( cudaMemcpy(d_A, A, bytes, cudaMemcpyHostToDevice) );
+	cudaErrorCheck( cudaMemcpy(d_B, B, bytes, cudaMemcpyHostToDevice) );
 
-	size_t bytes = M*N*sizeof(int);
+	// Set execution configuration parameters
+	// 		threads_per_block: number of CUDA threads per grid block
+	//		blocks_in_grid   : number of blocks in grid
+	//		(These are c structs with 3 member variables x, y, x)
+	dim3 threads_per_block( 16, 16, 1 );
+	dim3 blocks_in_grid( ceil( float(N) / threads_per_block.x ), 
+											 ceil( float(N) / threads_per_block.y ), 
+											 ceil( float(N) / threads_per_block.z ) );
 
-	cudaMalloc(&d_A, bytes);
-	cudaMalloc(&d_B, bytes);
-	cudaMalloc(&d_C, bytes);
+	// Launch kernel
+	add_matrices<<< blocks_in_grid, threads_per_block >>>(d_A, d_B, d_C, M, N);
 
-	cudaMemcpy(d_A, A, bytes, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_B, B, bytes, cudaMemcpyHostToDevice);
+	// Check for errors in kernel launch (e.g. invalid execution configuration paramters)
+  cudaError_t cuErrSync  = cudaGetLastError();
 
-	int num_threads_x = 16;
-	int num_threads_y = 16;
+	// Check for errors on the GPU after control is returned to CPU
+  cudaError_t cuErrAsync = cudaDeviceSynchronize();
 
-	int num_blocks_x  = ceil(float(N)/num_threads_x);
-	int num_blocks_y  = ceil(float(M)/num_threads_y);
+  if (cuErrSync != cudaSuccess) 
+	{ printf("CUDA Error - %s:%d: '%s'\n", __FILE__, __LINE__, cudaGetErrorString(cuErrSync)); exit(0); }
 
-	printf("num_threads_x: %d\n", num_threads_x);
-	printf("num_threads_y: %d\n", num_threads_y);
-	printf("num_blocks_x: %d\n", num_blocks_x);
-	printf("num_blocks_y: %d\n", num_blocks_y);
+  if (cuErrAsync != cudaSuccess) 
+	{ printf("CUDA Error - %s:%d: '%s'\n", __FILE__, __LINE__, cudaGetErrorString(cuErrAsync)); exit(0); }
 
-	dim3 blocks_in_grid( num_blocks_x, num_blocks_y, 1);
-	dim3 threads_in_block( num_threads_x, num_threads_y, 1 );
+	// Copy data from device array d_C to host array C
+	cudaErrorCheck( cudaMemcpy(C, d_C, bytes, cudaMemcpyDeviceToHost) );
 
-	add_matrices<<< blocks_in_grid, threads_in_block >>>(d_A, d_B, d_C, M, N);
-
-	cudaMemcpy(C, d_C, bytes, cudaMemcpyDeviceToHost);
-
-  for(int i=0; i<M; i++)
-  {
-    for(int j=0; j<N; j++)
-    {
-      if (C[i][j] != 3)
+	// Verify results
+	for(int i=0; i<M; i++)
+	{
+		for(int j=0; j<N; j++)
+		{
+			if (C[i][j] != 3)
 			{
 				printf("C[%d][%d] = %d instread of 3\n", i, j, C[i][j]);
 			}
-    }
-  }
+		}
+	}
+
+	// Free GPU memory
+	cudaErrorCheck( cudaFree(d_A) );
+	cudaErrorCheck( cudaFree(d_B) );
+	cudaErrorCheck( cudaFree(d_C) );
 
 	printf("__SUCCESS__\n");
-
-  cudaFree(d_A);
-  cudaFree(d_B);
-  cudaFree(d_C);
 
 	return 0;
 }
