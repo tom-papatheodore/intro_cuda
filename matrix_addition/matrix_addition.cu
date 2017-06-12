@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-// Macro for checking error CUDA API calls
+// Macro for checking errors in CUDA API calls
 #define cudaErrorCheck(call)                                                              \
 do{                                                                                       \
     cudaError_t cuErr = call;                                                             \
@@ -40,12 +40,11 @@ int main()
 
 	// Allocate memory for arrays d_A, d_B, and d_C on device
 	int *d_A, *d_B, *d_C;
-
 	cudaErrorCheck( cudaMalloc(&d_A, bytes) );
 	cudaErrorCheck( cudaMalloc(&d_B, bytes) );
 	cudaErrorCheck( cudaMalloc(&d_C, bytes) );
 
-	// Initialize host arrays d_A, d_B, and d_C
+	// Initialize host arrays A, B, and C
 	for(int i=0; i<M; i++)
 	{
 		for(int j=0; j<N; j++)
@@ -65,9 +64,7 @@ int main()
 	//		blocks_in_grid   : number of blocks in grid
 	//		(These are c structs with 3 member variables x, y, x)
 	dim3 threads_per_block( 16, 16, 1 );
-	dim3 blocks_in_grid( ceil( float(N) / threads_per_block.x ), 
-											 ceil( float(N) / threads_per_block.y ), 
-											 ceil( float(N) / threads_per_block.z ) );
+	dim3 blocks_in_grid( ceil( float(N) / threads_per_block.x ), ceil( float(M) / threads_per_block.y ), 1 );
 
 	// Launch kernel
 	add_matrices<<< blocks_in_grid, threads_per_block >>>(d_A, d_B, d_C, M, N);
