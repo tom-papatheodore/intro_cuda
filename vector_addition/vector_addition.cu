@@ -32,6 +32,7 @@ int main()
 	{
 		A[i] = 1;
 		B[i] = 2;
+		C[i] = 0;
 	}
 
 	// Copy data from host arrays A and B to device arrays d_A and d_B
