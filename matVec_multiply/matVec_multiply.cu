@@ -75,7 +75,6 @@ int main()
 	
 	// Copy data from host arrays x and y to device arrays d_x and d_y
 	cudaErrorCheck( cudaMemcpy(d_x, x, N*sizeof(int), cudaMemcpyHostToDevice) );
-  cudaErrorCheck( cudaMemcpy(d_y, y, M*sizeof(int), cudaMemcpyHostToDevice) );
 
   // Set execution configuration parameters
   //    threads_per_block: number of CUDA threads per grid block
