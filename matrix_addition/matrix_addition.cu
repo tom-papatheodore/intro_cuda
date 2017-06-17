@@ -44,7 +44,7 @@ int main()
 	cudaErrorCheck( cudaMalloc(&d_B, bytes) );
 	cudaErrorCheck( cudaMalloc(&d_C, bytes) );
 
-	// Initialize host arrays A, B, and C
+	// Initialize host arrays A and B
 	for(int i=0; i<M; i++)
 	{
 		for(int j=0; j<N; j++)
