@@ -41,7 +41,7 @@ int main()
 	// Set execution configuration parameters
 	//		thr_per_blk: number of CUDA threads per grid block
 	//		blk_in_grid: number of blocks in grid
-	int thr_per_blk = 1024;
+	int thr_per_blk = 256;
 	int blk_in_grid = ceil( float(N) / thr_per_blk );
 
 	// Launch kernel
