@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 // Size of array
-#define N 1024
+#define N 1048576
 
 // Kernel
 __global__ void add_vectors(int *a, int *b, int *c, int n)
@@ -23,7 +23,7 @@ int main()
 
 	// Allocate memory for arrays d_A, d_B, and d_C on device
 	int *d_A, *d_B, *d_C;
-	cudaMalloc(&d_A, bytes);	
+	cudaMalloc(&d_A, bytes);
 	cudaMalloc(&d_B, bytes);
 	cudaMalloc(&d_C, bytes);
 
@@ -42,7 +42,7 @@ int main()
 	// Set execution configuration parameters
 	//		thr_per_blk: number of CUDA threads per grid block
 	//		blk_in_grid: number of blocks in grid
-	int thr_per_blk = 128;
+	int thr_per_blk = 1024;
 	int blk_in_grid = ceil( float(N) / thr_per_blk );
 
 	// Launch kernel
@@ -56,7 +56,7 @@ int main()
 	{
 		if(C[i] != 3)
 		{ 
-			printf("Error: value of C[%d] = %d instead of 3\n", i, C[i]);
+			printf("\nError: value of C[%d] = %d instead of 3\n\n", i, C[i]);
 			exit(-1);
 		}
 	}	
@@ -71,7 +71,13 @@ int main()
 	cudaFree(d_B);
 	cudaFree(d_C);
 
+  printf("\n---------------------------\n");
 	printf("__SUCCESS__\n");
+	printf("---------------------------\n");
+	printf("N                 = %d\n", N);
+	printf("Threads Per Block = %d\n", thr_per_blk);
+	printf("Blocks In Grid    = %d\n", blk_in_grid);
+  printf("---------------------------\n\n");
 
 	return 0;
 }

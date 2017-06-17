@@ -1,6 +1,6 @@
 #!/bin/bash
 #PBS -A STF007
-#PBS -N vec_add
+#PBS -N dot
 #PBS -j oe
 #PBS -l walltime=00:10:00,nodes=1
 
@@ -10,4 +10,5 @@ date
 #source /opt/modules/default/init/bash
 module load cudatoolkit
 
-aprun -n1 -N1 -b nvprof ./run
+aprun -n1 -N1 ./run
+#aprun -n1 -N1 -b nvprof ./run
