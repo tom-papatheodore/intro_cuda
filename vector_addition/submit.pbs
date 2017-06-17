@@ -10,4 +10,4 @@ date
 #source /opt/modules/default/init/bash
 module load cudatoolkit
 
-aprun -n1 -N1 -b nvprof ./run
+aprun -n1 ./run

@@ -4,10 +4,10 @@
 #define N 1048576
 
 // Kernel
-__global__ void add_vectors(int *a, int *b, int *c, int n)
+__global__ void add_vectors(int *a, int *b, int *c)
 {
 	int id = blockDim.x * blockIdx.x + threadIdx.x;
-	if(id < n) c[id] = a[id] + b[id];
+	if(id < N) c[id] = a[id] + b[id];
 }
 
 // Main program
@@ -32,7 +32,6 @@ int main()
 	{
 		A[i] = 1;
 		B[i] = 2;
-		C[i] = 0;
 	}
 
 	// Copy data from host arrays A and B to device arrays d_A and d_B
@@ -46,7 +45,7 @@ int main()
 	int blk_in_grid = ceil( float(N) / thr_per_blk );
 
 	// Launch kernel
-	add_vectors<<< blk_in_grid, thr_per_blk >>>(d_A, d_B, d_C, N);
+	add_vectors<<< blk_in_grid, thr_per_blk >>>(d_A, d_B, d_C);
 
 	// Copy data from device array d_C to host array C
 	cudaMemcpy(C, d_C, bytes, cudaMemcpyDeviceToHost);
