@@ -15,14 +15,14 @@ do{                                                                             
 #define N	200
 
 // Kernel
-__global__ void add_matrices(int *a, int *b, int *c, int m, int n)
+__global__ void add_matrices(int *a, int *b, int *c)
 {
 	int column = blockDim.x * blockIdx.x + threadIdx.x;
 	int row    = blockDim.y * blockIdx.y + threadIdx.y;
 
-	if (row < m && column < n)
+	if (row < M && column < N)
 	{
-		int thread_id = row * n + column;
+		int thread_id = row * N + column;
 		c[thread_id] = a[thread_id] + b[thread_id];
 	}
 }
@@ -51,7 +51,6 @@ int main()
 		{
 			A[i][j] = 1;
 			B[i][j] = 2;
-			C[i][j] = 0;
 		}
 	}
 
@@ -67,7 +66,7 @@ int main()
 	dim3 blocks_in_grid( ceil( float(N) / threads_per_block.x ), ceil( float(M) / threads_per_block.y ), 1 );
 
 	// Launch kernel
-	add_matrices<<< blocks_in_grid, threads_per_block >>>(d_A, d_B, d_C, M, N);
+	add_matrices<<< blocks_in_grid, threads_per_block >>>(d_A, d_B, d_C);
 
 	// Check for errors in kernel launch (e.g. invalid execution configuration paramters)
   cudaError_t cuErrSync  = cudaGetLastError();
@@ -101,7 +100,16 @@ int main()
 	cudaErrorCheck( cudaFree(d_B) );
 	cudaErrorCheck( cudaFree(d_C) );
 
-	printf("__SUCCESS__\n");
+  printf("\n--------------------------------\n");
+  printf("__SUCCESS__\n");
+  printf("--------------------------------\n");
+  printf("M                         = %d\n", M);
+	printf("N                         = %d\n", N);
+  printf("Threads Per Block (x-dim) = %d\n", threads_per_block.x);
+  printf("Threads Per Block (y-dim) = %d\n", threads_per_block.y);
+  printf("Blocks In Grid (x-dim)    = %d\n", blocks_in_grid.x);
+	printf("Blocks In Grid (y-dim)    = %d\n", blocks_in_grid.y);
+  printf("--------------------------------\n\n");
 
 	return 0;
 }
