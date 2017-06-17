@@ -11,13 +11,13 @@ do{                                                                             
 }while(0)
 
 // Size of array
-#define N 10240
+#define N 1048576
 
 // Kernel
-__global__ void add_vectors(int *a, int *b, int *c, int n)
+__global__ void add_vectors(int *a, int *b, int *c)
 {
 	int id = blockDim.x * blockIdx.x + threadIdx.x;
-	if(id < n) c[id] = a[id] + b[id];
+	if(id < N) c[id] = a[id] + b[id];
 }
 
 // Main program
@@ -42,7 +42,6 @@ int main()
 	{
 		A[i] = 1;
 		B[i] = 2;
-		C[i] = 0;
 	}
 
 	// Copy data from host arrays A and B to device arrays d_A and d_B
@@ -52,11 +51,11 @@ int main()
 	// Set execution configuration parameters
 	//		thr_per_blk: number of CUDA threads per grid block
 	//		blk_in_grid: number of blocks in grid
-	int thr_per_blk = 128;
+	int thr_per_blk = 256;
 	int blk_in_grid = ceil( float(N) / thr_per_blk );
 
 	// Launch kernel
-	add_vectors<<< blk_in_grid, thr_per_blk >>>(d_A, d_B, d_C, N);
+	add_vectors<<< blk_in_grid, thr_per_blk >>>(d_A, d_B, d_C);
 
   // Check for errors in kernel launch (e.g. invalid execution configuration paramters)
 	cudaError_t cuErrSync  = cudaGetLastError();
@@ -90,7 +89,13 @@ int main()
 	cudaErrorCheck( cudaFree(d_B) );
 	cudaErrorCheck( cudaFree(d_C) );
 
-	printf("__SUCCESS__\n");
+  printf("\n---------------------------\n");
+  printf("__SUCCESS__\n");
+  printf("---------------------------\n");
+  printf("N                 = %d\n", N);
+  printf("Threads Per Block = %d\n", thr_per_blk);
+  printf("Blocks In Grid    = %d\n", blk_in_grid);
+  printf("---------------------------\n\n");
 
 	return 0;
 }
