@@ -17,15 +17,10 @@ do{                                                                             
 // Kernel
 __global__ void multiply_mat_vec(int *a, int *x, int *y)
 {
-  int row    = blockDim.y * blockIdx.y + threadIdx.y;
 
-	if(row < M)
-	{
-		for(int i=0; i<N; i++)
-		{
-			y[row] = y[row] + a[row*N + i]*x[i];
-		}
-	}
+	// FIX ME
+	// Write matrix-vector multiply kernel
+
 }
 
 // Main program
@@ -80,8 +75,8 @@ int main()
   //    threads_per_block: number of CUDA threads per grid block
   //    blocks_in_grid   : number of blocks in grid
   //    (These are c structs with 3 member variables x, y, x)
-  dim3 threads_per_block( 1, 128, 1 );
-  dim3 blocks_in_grid( 1, ceil( float(M) / threads_per_block.y ), 1 );
+  dim3 threads_per_block( #, #, # );	// FIX ME
+  dim3 blocks_in_grid( #, #, # );			// FIX ME
 
 	multiply_mat_vec<<< blocks_in_grid, threads_per_block >>>(d_A, d_x, d_y);
 
