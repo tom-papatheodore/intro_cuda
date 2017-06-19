@@ -15,7 +15,7 @@ do{                                                                             
 #define THREADS_PER_BLOCK 511
 
 // Kernel
-__global__ void dot_prod(int *a, int *b, int *res, int n)
+__global__ void dot_prod(int *a, int *b, int *res)
 {
 	__shared__ int products[THREADS_PER_BLOCK];
 
@@ -71,14 +71,8 @@ int main()
   int thr_per_blk = THREADS_PER_BLOCK;
   int blk_in_grid = ceil( float(N) / thr_per_blk );
 
-	printf("\nLaunching Grid:\n");
-	printf("-----------------\n");
-	printf("Threads Per Block: %d\n", thr_per_blk);
-	printf("Blocks In Grid   : %d\n", blk_in_grid);
-	printf("-----------------\n\n");
-
 	// Launch kernel
-	dot_prod<<< blk_in_grid, thr_per_blk >>>(d_A, d_B, d_result, N);
+	dot_prod<<< blk_in_grid, thr_per_blk >>>(d_A, d_B, d_result);
 
 	  // Check for errors in kernel launch (e.g. invalid execution configuration paramters)
   cudaError_t cuErrSync  = cudaGetLastError();
@@ -104,7 +98,13 @@ int main()
 	cudaErrorCheck( cudaFree(d_B) );
 	cudaErrorCheck( cudaFree(d_result) );
 
-	printf("__SUCCESS__\n");
+  printf("\n---------------------------\n");
+  printf("__SUCCESS__\n");
+  printf("---------------------------\n");
+  printf("N                 = %d\n", N);
+  printf("Threads Per Block = %d\n", thr_per_blk);
+  printf("Blocks In Grid    = %d\n", blk_in_grid);
+  printf("---------------------------\n\n");
 	
 	return 0;
 }
